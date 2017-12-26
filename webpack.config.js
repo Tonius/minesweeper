@@ -4,12 +4,11 @@ var webpack = require('webpack');
 module.exports = {
     module: {
         loaders: [
-            // Apply TypeScript loader to .js files.
-            // {
-            //     test: /\.tsx?$/,
-            //     exclude: /node_modules/,
-            //     loader: 'typescript?'
-            // }
+            {
+                test: /\.tsx?$/,
+                exclude: /node_modules/,
+                loader: 'ts-loader'
+            }
         ]
     },
     plugins: [
