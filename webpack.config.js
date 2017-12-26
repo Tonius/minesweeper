@@ -11,6 +11,9 @@ module.exports = {
             }
         ]
     },
+    resolve: {
+        extensions: ['.js', '.ts', '.tsx']
+    },
     plugins: [
         new webpack.DefinePlugin({
             'process.env': {
