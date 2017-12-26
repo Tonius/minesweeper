@@ -1,5 +1,7 @@
-let thing = [1, 2, 3];
+import {Map} from 'immutable';
 
-let [one, two, three] = thing;
 
-console.log(two);
+let map = Map({foo: 'bar', wie: 'die'});
+let map2 = map.set('wat', 'foobar');
+
+console.log(map.toObject(), map2.toObject());

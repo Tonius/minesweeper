@@ -13,3 +13,8 @@ copy_assets:
 	mkdir -p dist/
 	cp src/index.html dist/
 	sed -i 's/_ANTI_CACHING_HASH_/$(ANTI_CACHING_HASH)/g' dist/index.html
+
+deps:
+	rm -rf node_modules/
+	rm -f package-lock.json
+	npm install
