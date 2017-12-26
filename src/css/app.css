@@ -31,11 +31,16 @@
     background: #eeeeee;
     border: 1px solid #dddddd;
     box-sizing: border-box;
-    font-size: 2em;
+    font-size: 1.5em;
     color: #555;
     cursor: pointer;
 }
 
-.msw-board-cell:hover {
+.msw-board-cell:not(.state-shown):hover {
     background: #e0e0e0;
+}
+
+.msw-board-cell.state-shown {
+    background: #fafafa;
+    cursor: default;
 }
