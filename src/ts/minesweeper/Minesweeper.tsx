@@ -3,6 +3,7 @@ import {List, Record} from 'immutable';
 import {find, range} from 'lodash';
 
 import {Board as BoardComponent} from './Board';
+import {Stats} from './Stats';
 
 export interface Cell {
     type: 'start' | 'empty' | 'mine';
@@ -17,6 +18,7 @@ export type Board = List<Row>;
 
 interface MinesweeperState {
     start: boolean;
+    time: number;
     board: Board;
 }
 
@@ -31,16 +33,17 @@ const RIGHT_CLICK = 2;
 
 // TODO:
 // - implement endGame
-// - time tracker
-// - stats component
 // - configure game
 
 export class Minesweeper extends React.Component<{}, MinesweeperState> {
+    private intervalId?: number;
+
     constructor(props) {
         super(props);
 
         this.state = {
             start: true,
+            time: 0,
             board: List(range(ROWS).map(() => {
                 return List(range(COLS).map(() => {
                     return CellRecord();
@@ -59,6 +62,8 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
                 start: false,
                 board: this.initializeBoard(ri, ci)
             });
+
+            this.startTime();
 
             return;
         }
@@ -138,6 +143,16 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
         }
 
         return mines;
+    }
+
+    startTime() {
+        this.intervalId = setInterval(() => this.setState({time: this.state.time + 1}), 1000);
+    }
+
+    stopTime() {
+        if (this.intervalId !== undefined) {
+            clearInterval(this.intervalId);
+        }
     }
 
     isCellMine(ri, ci): boolean {
@@ -243,7 +258,13 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
 
     render() {
         return (
-            <BoardComponent board={this.state.board} onCellClick={this.handleCellClick} />
+            <div className="msw-container">
+                <Stats time={this.state.time} flags={this.getRemainingFlags()} />
+
+                <div className="msw-board-container">
+                    <BoardComponent board={this.state.board} onCellClick={this.handleCellClick} />
+                </div>
+            </div>
         );
     }
 }
