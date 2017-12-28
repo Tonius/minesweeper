@@ -19,6 +19,7 @@ export class Cell extends React.Component<CellProps> {
             text = '🚩';
         } else if (state === 'shown' && adjacentMines > 0) {
             text = String(adjacentMines);
+            className = `${className} adjacent-${adjacentMines}`;
         }
 
         return (

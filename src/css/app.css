@@ -38,6 +38,7 @@ body {
     border: 1px solid #dddddd;
     box-sizing: border-box;
     font-size: 1.5em;
+    font-weight: bold;
     color: #555;
     cursor: pointer;
 }
@@ -52,7 +53,39 @@ body {
 }
 
 .msw-board-cell.state-flagged {
-    font-weight: bold;
+    color: #ff0000;
+}
+
+.msw-board-cell.adjacent-1 {
+    color: #0100fe;
+}
+
+.msw-board-cell.adjacent-2 {
+    color: #017f01;
+}
+
+.msw-board-cell.adjacent-3 {
+    color: #fe0000;
+}
+
+.msw-board-cell.adjacent-4 {
+    color: #010080;
+}
+
+.msw-board-cell.adjacent-5 {
+    color: #810102;
+}
+
+.msw-board-cell.adjacent-6 {
+    color: #008081;
+}
+
+.msw-board-cell.adjacent-7 {
+    color: #000000;
+}
+
+.msw-board-cell.adjacent-8 {
+    color: #808080;
 }
 
 .msw-stats {
