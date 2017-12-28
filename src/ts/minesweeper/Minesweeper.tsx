@@ -12,8 +12,8 @@ export interface Cell {
 
 export type CellRecord = Record<Cell>;
 export const CellRecord = Record<Cell>({type: 'start', state: 'hidden', adjacentMines: 0});
-
-export type Board = List<List<CellRecord>>;
+export type Row = List<CellRecord>;
+export type Board = List<Row>;
 
 interface MinesweeperState {
     start: boolean;
@@ -25,6 +25,15 @@ type MinePositions = {row: number, col: number}[];
 const ROWS = 9;
 const COLS = 9;
 const MINES = 10;
+
+const LEFT_CLICK = 0;
+const RIGHT_CLICK = 2;
+
+// TODO:
+// - implement endGame
+// - time tracker
+// - stats component
+// - configure game
 
 export class Minesweeper extends React.Component<{}, MinesweeperState> {
     constructor(props) {
@@ -40,22 +49,34 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
         };
     }
 
-    handleCellClick = (ri: number, ci: number) => {
+    handleCellClick = (ri: number, ci: number, button: number) => {
         if (this.state.start) {
+            if (button !== LEFT_CLICK) {
+                return;
+            }
+
             this.setState({
                 start: false,
                 board: this.initializeBoard(ri, ci)
             });
 
             return;
-        } else if (this.isCellMine(ri, ci)) {
-            this.endGame(true);
+        }
 
+        if (this.isCellShown(ri, ci)) {
             return;
         }
 
-        if (!this.isCellShown(ri, ci)) {
+        if (button === LEFT_CLICK) {
+            if (this.isCellMine(ri, ci)) {
+                this.endGame(true);
+
+                return;
+            }
+
             this.setState({board: this.revealCells(this.state.board, ri, ci)});
+        } else if (button === RIGHT_CLICK) {
+            this.setState({board: this.toggleCellFlag(this.state.board, ri, ci)})
         }
     }
 
@@ -136,12 +157,12 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
     isCellShown(ri, ci): boolean {
         let row = this.state.board.get(ri);
         if (row === undefined) {
-            return false;
+            return true;
         }
 
         let cell = row.get(ci);
         if (cell === undefined) {
-            return false;
+            return true;
         }
 
         return cell.get('state', '') === 'shown';
@@ -158,7 +179,7 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
             return board;
         }
 
-        if (cell.get('state', '') === 'shown' || cell.get('type', '') === 'mine') {
+        if (cell.get('state', '') === 'shown' || cell.get('state', '') === 'flagged' || cell.get('type', '') === 'mine') {
             return board;
         }
 
@@ -182,6 +203,38 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
         }
 
         return board;
+    }
+
+    toggleCellFlag(board: Board, ri: number, ci: number): Board {
+        let row = board.get(ri);
+        if (row === undefined) {
+            return board;
+        }
+
+        let cell = row.get(ci);
+        if (cell === undefined) {
+            return board;
+        }
+
+        let isFlagged = cell.get('state', '') === 'flagged';
+
+        if (!isFlagged && this.getRemainingFlags() === 0) {
+            return board;
+        }
+
+        return board.set(ri, row.set(ci, cell.set('state', isFlagged ? 'hidden' : 'flagged')));
+    }
+
+    getRemainingFlags(): number {
+        let flags = 0;
+
+        this.state.board.forEach(row => row.forEach(cell => {
+            if (cell.get('state', '') === 'flagged') {
+                flags++;
+            }
+        }))
+
+        return MINES - flags;
     }
 
     endGame(boom: boolean) {

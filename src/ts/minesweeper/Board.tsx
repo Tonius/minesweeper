@@ -5,7 +5,7 @@ import {Cell} from './Cell';
 
 interface BoardProps {
     board: BoardType;
-    onCellClick: (row: number, col: number) => void;
+    onCellClick: (row: number, col: number, button: number) => void;
 }
 
 export class Board extends React.Component<BoardProps> {
@@ -15,7 +15,7 @@ export class Board extends React.Component<BoardProps> {
                 {this.props.board.map((row, ri) => (
                     <div key={ri} className="msw-board-row">
                         {row.map((cell, ci) => (
-                            <Cell key={ci} cell={cell} onClick={() => this.props.onCellClick(ri, ci)} />
+                            <Cell key={ci} cell={cell} onClick={(button) => this.props.onCellClick(ri, ci, button)} />
                         ))}
                     </div>
                 ))}

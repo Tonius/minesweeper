@@ -4,7 +4,7 @@ import {CellRecord} from './Minesweeper';
 
 interface CellProps {
     cell: CellRecord;
-    onClick?: () => void;
+    onClick: (button: number) => void;
 }
 
 export class Cell extends React.Component<CellProps> {
@@ -16,13 +16,16 @@ export class Cell extends React.Component<CellProps> {
 
         let text = '';
         if (state === 'flagged') {
-            text = 'F';
+            text = '🚩';
         } else if (state === 'shown' && adjacentMines > 0) {
             text = String(adjacentMines);
         }
 
         return (
-            <div className={className} onClick={this.props.onClick}>
+            <div
+                className={className}
+                onMouseDown={(evt) => this.props.onClick(evt.button)}
+                onContextMenu={(evt) => evt.preventDefault()}>
                 <span>{text}</span>
             </div>
         );
