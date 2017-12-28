@@ -5,6 +5,8 @@ import {find, range} from 'lodash';
 import {Board as BoardComponent} from './Board';
 import {Stats} from './Stats';
 
+export type GameState = 'start' | 'playing' | 'win' | 'lose';
+
 export interface Cell {
     type: 'start' | 'empty' | 'mine';
     state: 'hidden' | 'shown' | 'flagged';
@@ -17,7 +19,7 @@ export type Row = List<CellRecord>;
 export type Board = List<Row>;
 
 interface MinesweeperState {
-    start: boolean;
+    gameState: GameState;
     time: number;
     board: Board;
 }
@@ -32,8 +34,8 @@ const LEFT_CLICK = 0;
 const RIGHT_CLICK = 2;
 
 // TODO:
-// - implement endGame
 // - configure game
+// - touchscreen support
 
 export class Minesweeper extends React.Component<{}, MinesweeperState> {
     private intervalId?: number;
@@ -42,7 +44,7 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
         super(props);
 
         this.state = {
-            start: true,
+            gameState: 'start',
             time: 0,
             board: List(range(ROWS).map(() => {
                 return List(range(COLS).map(() => {
@@ -53,36 +55,47 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
     }
 
     handleCellClick = (ri: number, ci: number, button: number) => {
-        if (this.state.start) {
+        let {gameState, board} = this.state;
+
+        if (gameState !== 'start' && gameState !== 'playing') {
+            return;
+        } else if (gameState === 'start') {
             if (button !== LEFT_CLICK) {
                 return;
             }
 
-            this.setState({
-                start: false,
-                board: this.initializeBoard(ri, ci)
-            });
+            gameState = 'playing';
+            board = this.initializeBoard(ri, ci);
 
             this.startTime();
+        } else {
+            let row = board.get(ri)!;
+            let cell = row.get(ci)!;
 
-            return;
-        }
-
-        if (this.isCellShown(ri, ci)) {
-            return;
-        }
-
-        if (button === LEFT_CLICK) {
-            if (this.isCellMine(ri, ci)) {
-                this.endGame(true);
-
+            if (cell.get('state', '') === 'shown') {
                 return;
             }
 
-            this.setState({board: this.revealCells(this.state.board, ri, ci)});
-        } else if (button === RIGHT_CLICK) {
-            this.setState({board: this.toggleCellFlag(this.state.board, ri, ci)})
+            if (button === LEFT_CLICK) {
+                if (cell.get('state', '') === 'flagged') {
+                    return;
+                }
+
+                board = this.revealCells(board, ri, ci);
+
+                if (cell.get('type', '') === 'mine') {
+                    gameState = 'lose';
+                    this.stopTime();
+                } else if (this.allCellsRevealed(board)) {
+                    gameState = 'win';
+                    this.stopTime();
+                }
+            } else if (button === RIGHT_CLICK) {
+                board = this.toggleCellFlag(board, ri, ci);
+            }
         }
+
+        this.setState({gameState, board});
     }
 
     initializeBoard(startRow: number, startCol: number): Board {
@@ -155,34 +168,6 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
         }
     }
 
-    isCellMine(ri, ci): boolean {
-        let row = this.state.board.get(ri);
-        if (row === undefined) {
-            return false;
-        }
-
-        let cell = row.get(ci);
-        if (cell === undefined) {
-            return false;
-        }
-
-        return cell.get('type', '') === 'mine';
-    }
-
-    isCellShown(ri, ci): boolean {
-        let row = this.state.board.get(ri);
-        if (row === undefined) {
-            return true;
-        }
-
-        let cell = row.get(ci);
-        if (cell === undefined) {
-            return true;
-        }
-
-        return cell.get('state', '') === 'shown';
-    }
-
     revealCells(board: Board, ri: number, ci: number): Board {
         let row = board.get(ri);
         if (row === undefined) {
@@ -194,13 +179,13 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
             return board;
         }
 
-        if (cell.get('state', '') === 'shown' || cell.get('state', '') === 'flagged' || cell.get('type', '') === 'mine') {
+        if (cell.get('state', '') === 'shown' || cell.get('state', '') === 'flagged') {
             return board;
         }
 
         board = board.set(ri, row.set(ci, cell.set('state', 'shown')));
 
-        if (cell.get('adjacentMines', 0) > 0) {
+        if (cell.get('type', '') === 'mine' || cell.get('adjacentMines', 0) > 0) {
             return board;
         }
 
@@ -218,6 +203,18 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
         }
 
         return board;
+    }
+
+    allCellsRevealed(board: Board): boolean {
+        let allRevealed = true;
+
+        board.forEach(row => row.forEach(cell => {
+            if (cell.get('type', '') !== 'mine' && cell.get('state', '') === 'hidden') {
+                allRevealed = false;
+            }
+        }));
+
+        return allRevealed;
     }
 
     toggleCellFlag(board: Board, ri: number, ci: number): Board {
@@ -252,17 +249,16 @@ export class Minesweeper extends React.Component<{}, MinesweeperState> {
         return MINES - flags;
     }
 
-    endGame(boom: boolean) {
-        console.log('end game', boom);
-    }
-
     render() {
         return (
             <div className="msw-container">
-                <Stats time={this.state.time} flags={this.getRemainingFlags()} />
+                <Stats time={this.state.time} flags={this.getRemainingFlags()} gameState={this.state.gameState} />
 
                 <div className="msw-board-container">
-                    <BoardComponent board={this.state.board} onCellClick={this.handleCellClick} />
+                    <BoardComponent
+                        board={this.state.board}
+                        gameState={this.state.gameState}
+                        onCellClick={this.handleCellClick} />
                 </div>
             </div>
         );

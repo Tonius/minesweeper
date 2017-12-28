@@ -56,6 +56,11 @@ body {
     color: #ff0000;
 }
 
+.msw-board-cell.clicked-mine {
+    background: #ff0000;
+    color: #2b0000;
+}
+
 .msw-board-cell.adjacent-1 {
     color: #0100fe;
 }
@@ -92,6 +97,14 @@ body {
     text-align: center;
     margin: 10px 0;
     font-size: 1.5em;
+}
+
+.msw-stats.win {
+    color: #007b00;
+}
+
+.msw-stats.lose {
+    color: #c00000;
 }
 
 .msw-stats > span {

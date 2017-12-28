@@ -1,12 +1,16 @@
 import * as React from 'react';
+import {GameState} from './Minesweeper';
 
 interface StatsProps {
     time: number;
     flags: number;
+    gameState: GameState;
 }
 
 export class Stats extends React.Component<StatsProps> {
     render() {
+        let className = `msw-stats ${this.props.gameState}`;
+
         let minutes = String(Math.floor(this.props.time / 60));
         let seconds = String(this.props.time % 60);
 
@@ -15,7 +19,7 @@ export class Stats extends React.Component<StatsProps> {
         }
 
         return (
-            <div className="msw-stats">
+            <div className={className}>
                 <span>
                     <strong>Time:</strong> {minutes}:{seconds}
                 </span>
