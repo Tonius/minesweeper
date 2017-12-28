@@ -26,16 +26,12 @@ interface MinesweeperState {
 
 type MinePositions = {row: number, col: number}[];
 
-const ROWS = 9;
-const COLS = 9;
-const MINES = 10;
+const ROWS = 16;
+const COLS = 16;
+const MINES = 35;
 
 const LEFT_CLICK = 0;
 const RIGHT_CLICK = 2;
-
-// TODO:
-// - configure game
-// - touchscreen support
 
 export class Minesweeper extends React.Component<{}, MinesweeperState> {
     private intervalId?: number;
